@@ -12,7 +12,7 @@ if (!isset($_SESSION['loggedin'])) {
 
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bhajan Planner</title>
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -171,6 +171,11 @@ if (!isset($_SESSION['loggedin'])) {
             font-size: 0.875em;
             margin-top: 5px;
         }
+        .ui-autocomplete {
+            font-family: monospace;
+            font-size: 1em;
+            transform: translateX(-90%);
+        }
         .error-message {
             color: red;
             font-weight: bold;
@@ -187,18 +192,9 @@ if (!isset($_SESSION['loggedin'])) {
             border-bottom: 1px solid #ddd;
         }
 
-        .ui-autocomplete {
-        max-width: 100%;
-
-        left: 41.25% !important; /* Ensure it's positioned in the center */
-        transform: translateX(0%); /* Center the dropdown */
-    }
-
         .autocomplete-item.header {
             background-color: lightgrey;
             pointer-events: none;
-            width: 315px;
-            text-align: right;
         }
 
         .autocomplete-item {
@@ -208,19 +204,22 @@ if (!isset($_SESSION['loggedin'])) {
             border-bottom: 1px solid #ddd;
             font-family: monospace;
             font-size: 1em;
-            width: 315px; /* Set a fixed width */
-            margin: 10 auto; /* Center the autocomplete box */
+        }
+
+        .autocomplete-item span,
+        .autocomplete-item strong {
+            flex: 1;
+            text-align: center;
         }
 
         .autocomplete-item strong.bhajan-name {
+            text-align: left;
             flex: 2;
-            text-align: left; /* Center the text */
         }
 
         .autocomplete-item span.shruthi,
         .autocomplete-item span.last-sung {
-            text-align: right;
-            width: 50px; /* Set fixed width for other columns */
+            text-align: center;
         }
 
         .form-check {
@@ -338,7 +337,7 @@ if (!isset($_SESSION['loggedin'])) {
     }
     .form-check input[type="radio"] {
         margin-right: 0;
-        width:15px;
+        width:0px;
         margin-left: 80px;
     }
     .form-check-fast input[type="radio"] {
@@ -376,7 +375,7 @@ if (!isset($_SESSION['loggedin'])) {
 </head>
 <body>
     <div class="container">
-        <h1>Bhajan Planner</h1>
+        <h1><a href="admin.php">Bhajan Planner</a></h1>
         <?php include "db_connect.php"; ?>
         <br>
 
@@ -424,7 +423,7 @@ if (!isset($_SESSION['loggedin'])) {
                     <p class="help-block">Search bhajans in the database</p>
                 </div>
                 <div class="form-group">
-                    <button id="submit" name="submit" class="btn-primary-mob">Search</button>
+                    <button id="submit" name="submit" class="btn-primary">Search</button>
                 </div>
                 </fieldset>
         </fieldset><br>
@@ -480,21 +479,21 @@ if (!isset($_SESSION['loggedin'])) {
         </div>
 
         <div class="form-group">
-            <button id="submit" name="submit" class="btn-primary-mob">Fix</button>
+            <button id="submit" name="submit" class="btn-primary">Fix</button>
         </div>
     </fieldset><br>
 </form>
 
 
             
-            <!-- <form action="/search_all_bhajans.php">
+            <form action="/search_all_bhajans.php">
             <fieldset>
                 <legend>Resources</legend>
                 <div class="form-group">
-                    <button id="submit" name="submit" class="btn-primary-mob">Bhajan List</button>
+                    <button id="submit" name="submit" class="btn-primary">Bhajan List</button>
                 </div>
             </fieldset><br>
-        </form> -->
+        </form>
 
         <form action="/bhajans_sung_on.php">
             <fieldset>
@@ -504,7 +503,7 @@ if (!isset($_SESSION['loggedin'])) {
                     <input id="datepicker" name="sungdate" required style="width: 25%; padding: 8px;">
                 </div>
                 <div class="form-group">
-                    <button id="submit" name="submit" class="btn-primary-mob">Edit</button>
+                    <button id="submit" name="submit" class="btn-primary">Edit</button>
                 </div>
             </fieldset><br>
         </form>
@@ -513,14 +512,6 @@ if (!isset($_SESSION['loggedin'])) {
 #################### REQUIRE LOGIN ######################
 ##################################################### -->
 
-        <form action="/seating.php">
-            <fieldset>
-                <legend>Bhajan Fixing</legend>
-                <div class="form-group">
-                    <button id="submit" name="submit" class="btn-primary-mob" style="width: 35%">Enter the singers</button>
-                </div>
-            </fieldset><br>
-        </form>
 
         <form action="/submit_todayslist.php" method="POST">
         <fieldset>
@@ -533,10 +524,10 @@ if (!isset($_SESSION['loggedin'])) {
                 </div>
             </div>
             <div class="form-group">
-                <button type="button" id="addButton" onclick="addNewBhajanField()" class="btn-primary-mob">Add Bhajan</button>
+                <button type="button" id="addButton" onclick="addNewBhajanField()" class="btn-primary">Add Bhajan</button>
             </div>
             <div class="form-group">
-                <button type="submit" name="submit" class="btn-primary-mob">Update</button>
+                <button type="submit" name="submit" class="btn-primary">Update</button>
             </div>
         </fieldset><br>
     </form>
@@ -585,31 +576,24 @@ if (!isset($_SESSION['loggedin'])) {
                     </select>
                 </div>
                 <div class="form-group">
-                    <u><label for="speed">Speed:</label></u><br><br>
-                    <div class="form-check form-check-inline">
-            <input type="radio" id="slow" name="speed" value="Slow">
-            <label for="slow">Slow</label>
-        </div>
-
-        <div class="form-check form-check-inline">
-            <input type="radio" id="medium" name="speed" value="Medium">
-            <label for="medium">Medium</label>
-        </div>
-
-        <div class="form-check form-check-inline">
-            <input type="radio" id="mfast" name="speed" value="Mfast">
-            <label for="mfast">Medium Fast</label>
-        </div>
-
-        <div class="form-check form-check-inline">
-            <input type="radio" id="fast" name="speed" value="Fast">
-            <label for="fast">Fast</label>
-        </div>
-
-        <div class="form-check form-check-inline">
-            <input type="radio" id="thirdspeed" name="speed" value="Third Speed">
-            <label for="thirdspeed">Third Speed</label>
-        </div>
+                    <label for="speed">Speed:</label>
+                        <div id="speed" style="font-family: monospace;">
+                            <label>
+                                <input type="checkbox" name="speed" value="Slow"> Slow
+                            </label><br>
+                            <label>
+                                <input type="checkbox" name="speed" value="Medium"> Medium
+                            </label><br>
+                            <label>
+                                <input type="checkbox" name="speed" value="Mfast"> Medium Fast
+                            </label><br>
+                            <label>
+                                <input type="checkbox" name="speed" value="Fast"> Fast
+                            </label><br>
+                            <label>
+                                <input type="checkbox" name="speed" value="Third Speed"> Third Speed
+                            </label><br>
+                        </div>
                 </div>
 
                 <div class="form-group">
@@ -617,7 +601,7 @@ if (!isset($_SESSION['loggedin'])) {
                     <textarea id="lyrics" name="lyrics" rows="10" cols="50" style="width: 80%; padding: 8px; font-family: monospace;" placeholder="Enter lyrics here..."></textarea>
                 </div>
                 <div class="form-group">
-                    <button id="submit" name="submit" class="btn-primary-mob">Add a new bhajan</button>
+                    <button id="submit" name="submit" class="btn-primary">Add a new bhajan</button>
                 </div>
             </fieldset><br>
         </form>
@@ -634,7 +618,7 @@ if (!isset($_SESSION['loggedin'])) {
 "><br>
                 </div>
                 <div class="form-group">
-                    <button id="submit" name="submit" class="btn-primary-mob">Remove</button>
+                    <button id="submit" name="submit" class="btn-primary">Remove</button>
                 </div>
             </fieldset><br>
         </form>
@@ -648,7 +632,7 @@ if (!isset($_SESSION['loggedin'])) {
         <form action="/index.php">
             <fieldset>
                 <div class="form-group" action="/logout.php">
-                    <button id="submit" name="submit" class="btn-primary-mob">Logout</button>
+                    <button id="submit" name="submit" class="btn-primary">Logout</button>
                 </div>
             </fieldset><br>
         </form>

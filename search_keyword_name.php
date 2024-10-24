@@ -89,7 +89,7 @@
                     <tr id="bhajan-' . $row['BhajanID'] . '" class="bhajan-row">
                         <td class="bhajan-name" data-id="' . $row['BhajanID'] . '">' . $row['BhajanName'] . '</td>
                         <td>' . $row['Shruthi'] . '</td>
-                        <td><a href="bhajans_sung_on.php?sungdate=' . substr($row['LastSungOn'], -10) . '">' . substr($row['LastSungOn'], -10) . '</a></td>
+                        <td><a href="show_bhajans.php?sungdate=' . substr($row['LastSungOn'], -10) . '">' . substr($row['LastSungOn'], -10) . '</a></td>
                     </tr>';
                     // <tr id="lyrics-' . $row['BhajanID'] . '" class="lyrics-row">
                     //     <td colspan="1" class="lyrics"></td>

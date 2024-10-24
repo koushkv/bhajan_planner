@@ -56,50 +56,112 @@
             background-color: #ffe4bb;
             border: 1px solid #ddd;
         }
+        .youtube-icon {
+            width: 30px; /* Adjust size of the YouTube icon */
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <?php
         include "db_connect.php";
-        $deity = $_GET["deity"];
+        $deity = isset($_GET["deity"]) ? $_GET["deity"] : '';
 
-        echo "<h2>List of Bhajans</h2>";
+        echo "<h2>Showing all $deity bhajans</h2>";
 
         // Use real_escape_string to prevent SQL injection
         $deity = $mysqli->real_escape_string($deity);
 
-        
-
-        $sql = "SELECT BhajanID, BhajanName, Shruthi, LastSungOn 
+        $sql = "SELECT BhajanID, BhajanName, Shruthi, LastSungOn, Deity, Lyrics, Link
                 FROM bhajans_table 
-                WHERE Deity REGEXP '[[:<:]]" . $deity . "[[:>:]]'";
-		$sql .= " ORDER BY LastSungOn ASC";
+                WHERE Deity LIKE '%" . $deity . "%'
+                ORDER BY LastSungOn ASC";
         $result = $mysqli->query($sql);
 
-        if ($result->num_rows > 0) {
+        // Get today's date
+        $today = new DateTime();
+        $bhajans = array();
+
+        while ($row = $result->fetch_assoc()) {
+            // Check if the LastSungOn field is not empty and valid
+            $lastSungOnStr = !empty($row['LastSungOn']) && strlen($row['LastSungOn']) > 10
+                ? substr($row['LastSungOn'], -10)
+                : $row['LastSungOn'];
+
+            if (!empty($lastSungOnStr) && strtotime($lastSungOnStr)) {
+                $lastSungOn = new DateTime($lastSungOnStr);
+                $interval = $today->diff($lastSungOn);
+                $days = $interval->days;
+
+                $bhajans[] = array(
+                    'BhajanID' => $row['BhajanID'],
+                    'BhajanName' => $row['BhajanName'],
+                    'Shruthi' => $row['Shruthi'],
+                    'DaysAgo' => $days,
+                    'Link' => $row['Link'] // Add the YouTube link here
+                );
+            }
+        }
+
+        // Sort bhajans by DaysAgo in descending order
+        usort($bhajans, function ($a, $b) {
+            return $b['DaysAgo'] - $a['DaysAgo'];
+        });
+
+        // Format LastSungOn after sorting
+        foreach ($bhajans as &$bhajan) {
+            $days = $bhajan['DaysAgo'];
+            if ($days == 0) {
+                $bhajan['FormattedLastSungOn'] = "Today";
+            } elseif ($days == 1) {
+                $bhajan['FormattedLastSungOn'] = "Yesterday";
+            } elseif ($days > 360) {
+                $bhajan['FormattedLastSungOn'] = "1+ y";
+            } elseif ($days > 180) {
+                $bhajan['FormattedLastSungOn'] = "6+ m";
+            } elseif ($days > 90) {
+                $bhajan['FormattedLastSungOn'] = "3+ m";
+            } else {
+                $bhajan['FormattedLastSungOn'] = $days . "d";
+            }
+        }
+        unset($bhajan); // Unset reference to prevent potential issues
+
+        if (count($bhajans) > 0) {
             echo '<table>
                     <tr>
                         <th>Bhajan</th>
                         <th>Shruthi</th>
-                        <th>Last Sung On</th>
+                        <th>Sung</th>
+                        <th>Listen</th> <!-- Add "Listen" column -->
                     </tr>';
-            while ($row = $result->fetch_assoc()) {
+            foreach ($bhajans as $bhajan) {
                 echo '
-                    <tr id="bhajan-' . $row['BhajanID'] . '" class="bhajan-row">
-                        <td class="bhajan-name" data-id="' . $row['BhajanID'] . '">' . $row['BhajanName'] . '</td>
-                        <td>' . $row['Shruthi'] . '</td>
-                        <td><a href="bhajans_sung_on.php?sungdate=' . substr($row['LastSungOn'], -10) . '">' . substr($row['LastSungOn'], -10) . '</a></td>
+                    <tr id="bhajan-' . $bhajan['BhajanID'] . '" class="bhajan-row">
+                        <td class="bhajan-name" data-id="' . $bhajan['BhajanID'] . '">' . htmlspecialchars($bhajan['BhajanName']) . '</td>
+                        <td>' . htmlspecialchars($bhajan['Shruthi']) . '</td>
+                        <td>' . htmlspecialchars($bhajan['FormattedLastSungOn']) . '</td>';
+                
+                // Check if a YouTube link exists
+                if (!empty($bhajan['Link'])) {
+                    echo '<td style="text-align: center;">
+                            <a href="' . htmlspecialchars($bhajan['Link']) . '" target="_blank">
+                                <img class="youtube-icon" src="https://upload.wikimedia.org/wikipedia/commons/4/42/YouTube_icon_%282013-2017%29.png" alt="YouTube">
+                            </a>
+                          </td>';
+                } else {
+                    echo '<td></td>'; // Empty cell if no link is available
+                }
+
+                echo '</tr>
+                    <tr id="lyrics-' . $bhajan['BhajanID'] . '" class="lyrics-row">
+                        <td colspan="4" class="lyrics"></td>
                     </tr>';
-                    // <tr id="lyrics-' . $row['BhajanID'] . '" class="lyrics-row">
-                    //     <td colspan="1" class="lyrics"></td>
-                    // </tr>';
             }
             echo '</table>';
         } else {
-            echo "0 results" . "<br>";
+            echo "0 results". "<br>";
         }
-
         $mysqli->close();
         ?>
         <br><br>
@@ -112,7 +174,7 @@
             element.addEventListener('click', function() {
                 const bhajanID = this.getAttribute('data-id');
                 const lyricsRow = document.getElementById('lyrics-' + bhajanID);
-                
+
                 if (lyricsRow.style.display === 'table-row') {
                     lyricsRow.style.display = 'none';
                 } else {

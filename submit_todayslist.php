@@ -56,6 +56,8 @@
             include "db_connect.php";
 
             $appendDate = $_POST["appendDate"];
+            $date = DateTime::createFromFormat('Y-m-d', $appendDate);
+        $readableDate = $date->format('jS M, Y');
             $bhajans = $_POST["bhajan"];
 
             // Sanitize inputs to prevent SQL injection
@@ -69,15 +71,16 @@
                         SET LastSungOn = CONCAT(IFNULL(LastSungOn, ''),' $appendDate')
                         WHERE BhajanName = '$bhajan'";
 
-                // if ($mysqli->query($sql) === TRUE) {
-                //     echo "Record for $bhajan updated successfully<br>";
-                // } else {
-                //     echo "Error updating record for $bhajan: " . $mysqli->error . "<br>";
-                // }
+                if ($mysqli->query($sql) === TRUE) {
+                    continue;
+                    // echo "Record for $bhajan updated successfully<br>";
+                } else {
+                    echo "Error updating record for $bhajan: " . $mysqli->error . "<br>";
+                }
             }
 
-            echo "<h2> Bhajans sung on the date $appendDate </h2>";
-            $sql = "SELECT BhajanName, Shruthi FROM bhajans_table WHERE LastSungOn LIKE '%" . $mysqli->real_escape_string($appendDate) . "%'";
+            echo "<h2> Bhajans sung on $readableDate </h2>";
+            $sql = "SELECT BhajanName, Shruthi, Deity FROM bhajans_table WHERE LastSungOn LIKE '%" . $mysqli->real_escape_string($appendDate) . "%'";
         $result = $mysqli->query($sql);
 
         if ($result->num_rows > 0) {
@@ -100,8 +103,8 @@
 
             $mysqli->close();
         }
-        ?>
-
+        ?><br><br>
+<a href="index.php" class="btn-primary">Return to main page</a>
     </div>
 </body>
 </html>

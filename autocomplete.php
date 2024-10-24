@@ -46,6 +46,8 @@ while ($row = $result->fetch_assoc()) {
     );
 }
 
+$bhajans = array_slice($bhajans, 0, 15);
+
 echo json_encode($bhajans);
 
 $mysqli->close();

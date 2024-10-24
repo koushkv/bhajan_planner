@@ -1,10 +1,5 @@
 <?php
 
-$host = "localhost";
-		$username = "root";
-		$user_pass = "usbw";
-		$database_in_use = "test";
-
-		$mysqli = new mysqli($host, $username, $user_pass, $database_in_use);
+		$mysqli = new mysqli("sql307.infinityfree.com", "if0_37004859", "8ilMgIc7jgxz4v", "if0_37004859_root");
 
         ?>

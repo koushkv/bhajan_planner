@@ -54,13 +54,15 @@ if (!isset($_SESSION['loggedin'])) {
 
         $(function() {
             $('#datepicker1').datepicker({
-                dateFormat: 'yy-mm-dd'
+                dateFormat: 'yy-mm-dd',
+                maxDate: 0
             });
         });
 
         $(document).ready(function () {
             $('#datepicker').datepicker({
-                dateFormat: 'yy-mm-dd'
+                dateFormat: 'yy-mm-dd',
+                maxDate: 0
             });
             
             $('#keyword, #newbhajan, #delbhajan').autocomplete({
@@ -111,7 +113,7 @@ if (!isset($_SESSION['loggedin'])) {
         .container {
             margin: 20px auto;
             background-color: #fff;
-            min-width: 390px;
+            min-width: 380px;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -132,7 +134,7 @@ if (!isset($_SESSION['loggedin'])) {
             font-family: monospace;
         }
         th {
-            background-color: #4CAF50;
+            background-color: #535353;
             color: white;
         }
         tr:nth-child(even) {
@@ -140,7 +142,7 @@ if (!isset($_SESSION['loggedin'])) {
         }
         legend {
             background-color: #FFFFFF;
-            color: green;
+            color: black;
             padding: 5px 10px;
             border-radius: 5px;
             font-size: 1.2em;
@@ -186,7 +188,6 @@ if (!isset($_SESSION['loggedin'])) {
             justify-content: space-between;
             border-bottom: 1px solid #ddd;
         }
-
         .ui-autocomplete {
         max-width: 100%;
 
@@ -222,6 +223,15 @@ if (!isset($_SESSION['loggedin'])) {
             text-align: right;
             width: 50px; /* Set fixed width for other columns */
         }
+        .ui-datepicker1 {
+    left: 50% !important; 
+    transform: translateX(-50%);
+}
+
+.ui-datepicker {
+    left: 50% !important; 
+    transform: translateX(-50%);
+}
 
         .form-check {
             display: flex;
@@ -257,17 +267,21 @@ if (!isset($_SESSION['loggedin'])) {
 
         .form-check input[type="radio"] {
         margin-right: 110px;
+        width: 15px;
 
         }
         .form-check-fast input[type="radio"] {
-            margin-right: 110px;
-    }
-    .form-check-slow input[type="radio"] {
-            margin-right: 110px;
-    }
-    .form-check-med input[type="radio"] {
-            margin-right: 110px;
-    }
+                margin-right: 110px;
+                width: 15px;
+        }
+        .form-check-slow input[type="radio"] {
+                margin-right: 110px;
+                width: 15px;
+        }
+        .form-check-med input[type="radio"] {
+                margin-right: 110px;
+                width: 15px;
+        }
         .form-check div {
             display: flex;
             align-items: center;
@@ -281,7 +295,10 @@ if (!isset($_SESSION['loggedin'])) {
             border: 1px solid #ccc;
             border-radius: 5px;
         }
-        
+        h1 {
+            font-family: 'Palatino Linotype', serif; /* Change this to your desired font */
+            font-size: 2em; /* You can adjust the size */
+        }
 
         @media (max-width: 450px) {
     .container {
@@ -294,11 +311,12 @@ if (!isset($_SESSION['loggedin'])) {
     }
     legend {
             background-color: #FFFFFF;
-            color: green;
+            color: black;
             padding: 5px 10px;
             border-radius: 5px;
             font-size: 1.2em;
             text-decoration: underline; 
+            font-weight: bold;
         }
     input, select {
         width: 100%;
@@ -371,7 +389,6 @@ if (!isset($_SESSION['loggedin'])) {
     }
 }
 
-
     </style>
 </head>
 <body>
@@ -383,153 +400,23 @@ if (!isset($_SESSION['loggedin'])) {
         
 
 
-        <form action="/search_keyword_deity.php">
-            <fieldset>
-            <legend>Search for Bhajans</legend>
-            <fieldset>
-            <legend>Search by Deity</legend>
-                <div class="form-group">
-                    <label for="deity">Deity:</label>
-                    <select id="deity" name="deity" style="width: 37%; padding: 8px;             font-family: monospace;
-">
-                            <option value="Ganesha">Ganesha</option>
-                        <option value="Guru">Guru</option>
-                        <option value="Devi">Devi</option>
-                        <option value="Sai">Sai</option>
-                        <option value="Sarvadharma">Sarvadharma</option>
-                        <option value="Vittala">Vittala</option>
-                        <option value="Rama">Rama</option>
-                        <option value="Dattatreya">Dattatreya</option>
-                        <option value="Krishna">Krishna</option>
-                        <option value="Narayana">Narayana</option>
-                        <option value="Shiva">Shiva</option>
-                        <option value="Srinivasa">Srinivasa</option>
-                        <option value="Hanuman">Hanuman</option>
-                        <option value="Subramanya">Subramanya</option>
-                    </select>
-                    <button id="submit" name="submit" class="btn-primary-mob">Search</button>
-
-                </div>
-</fieldset>
-                
-            
-        </form>
-
-        <form action="/search_keyword_name.php">
-        <fieldset>
-        <legend>Search by Name</legend>
-                <div class="form-group">
-                    <input id="keyword" name="keyword" type="search" style="width: 50%; padding: 8px;             font-family: monospace;
-">
-                    <p class="help-block">Search bhajans in the database</p>
-                </div>
-                <div class="form-group">
-                    <button id="submit" name="submit" class="btn-primary-mob">Search</button>
-                </div>
-                </fieldset>
-        </fieldset><br>
-            </form>
-
-
-        <form action="/quick_fix.php">
-    <fieldset>
-        <legend>Quick Fix</legend>
-        <div class="form-group">
-            <label for="deity">Choose Deity:</label>
-            <select id="deity" name="deity" style="width: 37%; padding: 8px; font-family: monospace;">
-                <option value="Ganesha">Ganesha</option>
-                <option value="Guru">Guru</option>
-                <option value="Devi">Devi</option>
-                <option value="Sai">Sai</option>
-                <option value="Sarvadharma">Sarvadharma</option>
-                <option value="Vittala">Vittala</option>
-                <option value="Rama">Rama</option>
-                <option value="Dattatreya">Dattatreya</option>
-                <option value="Krishna">Krishna</option>
-                <option value="Narayana">Narayana</option>
-                <option value="Shiva">Shiva</option>
-                <option value="Srinivasa">Srinivasa</option>
-                <option value="Hanuman">Hanuman</option>
-                <option value="Subramanya">Subramanya</option>
-            </select>
-        </div>
-
-        <div class="form-check form-check-inline">
-            <input type="radio" id="slow" name="speed" value="Slow">
-            <label for="slow">Slow</label>
-        </div>
-
-        <div class="form-check form-check-inline">
-            <input type="radio" id="medium" name="speed" value="Medium">
-            <label for="medium">Medium</label>
-        </div>
-
-        <div class="form-check form-check-inline">
-            <input type="radio" id="mfast" name="speed" value="Mfast">
-            <label for="mfast">Medium Fast</label>
-        </div>
-
-        <div class="form-check form-check-inline">
-            <input type="radio" id="fast" name="speed" value="Fast">
-            <label for="fast">Fast</label>
-        </div>
-
-        <div class="form-check form-check-inline">
-            <input type="radio" id="thirdspeed" name="speed" value="Third Speed">
-            <label for="thirdspeed">Third Speed</label>
-        </div>
-
-        <div class="form-group">
-            <button id="submit" name="submit" class="btn-primary-mob">Fix</button>
-        </div>
-    </fieldset><br>
-</form>
-
-
-            
-            <!-- <form action="/search_all_bhajans.php">
-            <fieldset>
-                <legend>Resources</legend>
-                <div class="form-group">
-                    <button id="submit" name="submit" class="btn-primary-mob">Bhajan List</button>
-                </div>
-            </fieldset><br>
-        </form> -->
-
-        <form action="/bhajans_sung_on.php">
-            <fieldset>
-                <legend>Edit Bhajan List</legend>
-                <div class="form-group">
-                <label for="sungdate">Select the Date:</label>
-                    <input id="datepicker" name="sungdate" required style="width: 25%; padding: 8px;">
-                </div>
-                <div class="form-group">
-                    <button id="submit" name="submit" class="btn-primary-mob">Edit</button>
-                </div>
-            </fieldset><br>
-        </form>
+       
+        
 
 <!--##################################################### 
 #################### REQUIRE LOGIN ######################
 ##################################################### -->
 
-        <form action="/seating.php">
-            <fieldset>
-                <legend>Bhajan Fixing</legend>
-                <div class="form-group">
-                    <button id="submit" name="submit" class="btn-primary-mob" style="width: 35%">Enter the singers</button>
-                </div>
-            </fieldset><br>
-        </form>
+
 
         <form action="/submit_todayslist.php" method="POST">
         <fieldset>
             <legend>Submit Bhajan List</legend>
             <div id="formFields">
                 <div class="form-group">
-                    <label for="appendDate">Select the Date:</label>
-                    <input type="text" id="datepicker1" name="appendDate" required style="width: 25%; padding: 8px;             font-family: monospace;
+                    <input type="text" id="datepicker1" name="appendDate" required readonly style="width: 25%; padding: 8px;             font-family: monospace;
 ">
+<p class="help-block">Select the date</p>
                 </div>
             </div>
             <div class="form-group">
@@ -541,7 +428,7 @@ if (!isset($_SESSION['loggedin'])) {
         </fieldset><br>
     </form>
 
-        <form action="/add_bhajan.php">
+        <!-- <form action="/add_bhajan.php">
             <fieldset>
                 <legend>Add a Bhajan</legend>
                 <div class="form-group">
@@ -585,31 +472,24 @@ if (!isset($_SESSION['loggedin'])) {
                     </select>
                 </div>
                 <div class="form-group">
-                    <u><label for="speed">Speed:</label></u><br><br>
-                    <div class="form-check form-check-inline">
-            <input type="radio" id="slow" name="speed" value="Slow">
-            <label for="slow">Slow</label>
-        </div>
-
-        <div class="form-check form-check-inline">
-            <input type="radio" id="medium" name="speed" value="Medium">
-            <label for="medium">Medium</label>
-        </div>
-
-        <div class="form-check form-check-inline">
-            <input type="radio" id="mfast" name="speed" value="Mfast">
-            <label for="mfast">Medium Fast</label>
-        </div>
-
-        <div class="form-check form-check-inline">
-            <input type="radio" id="fast" name="speed" value="Fast">
-            <label for="fast">Fast</label>
-        </div>
-
-        <div class="form-check form-check-inline">
-            <input type="radio" id="thirdspeed" name="speed" value="Third Speed">
-            <label for="thirdspeed">Third Speed</label>
-        </div>
+                    <label for="speed">Speed:</label>
+                        <div id="speed" style="font-family: monospace;">
+                            <label>
+                                <input type="checkbox" name="speed" value="Slow"> Slow
+                            </label><br>
+                            <label>
+                                <input type="checkbox" name="speed" value="Medium"> Medium
+                            </label><br>
+                            <label>
+                                <input type="checkbox" name="speed" value="Mfast"> Medium Fast
+                            </label><br>
+                            <label>
+                                <input type="checkbox" name="speed" value="Fast"> Fast
+                            </label><br>
+                            <label>
+                                <input type="checkbox" name="speed" value="Third Speed"> Third Speed
+                            </label><br>
+                        </div>
                 </div>
 
                 <div class="form-group">
@@ -617,27 +497,25 @@ if (!isset($_SESSION['loggedin'])) {
                     <textarea id="lyrics" name="lyrics" rows="10" cols="50" style="width: 80%; padding: 8px; font-family: monospace;" placeholder="Enter lyrics here..."></textarea>
                 </div>
                 <div class="form-group">
-                    <button id="submit" name="submit" class="btn-primary-mob">Add a new bhajan</button>
+                    <button id="submit" name="submit" class="btn-primary">Add a new bhajan</button>
                 </div>
             </fieldset><br>
-        </form>
+        </form> -->
 
 
         
 
-        <form action="/delete_bhajan.php">
-            <fieldset>
-                <legend>Remove Bhajan</legend>
+        <form>
+        <fieldset>
+        <legend>Search by Name</legend>
                 <div class="form-group">
-                    <label for="delbhajan">Name of the bhajan:</label>
-                    <input id="delbhajan" name="delbhajan" type="text" placeholder="Enter the name of the bhajan" required style="width: 47%; padding: 8px;             font-family: monospace;
-"><br>
+                    <input id="keyword" name="keyword" type="search" placeholder="Enter the bhajan name" style="width: 55%; padding: 8px;             font-family: monospace;
+">
+                    <p class="help-block">Check if the bhajans are updated correctly</p>
                 </div>
-                <div class="form-group">
-                    <button id="submit" name="submit" class="btn-primary-mob">Remove</button>
-                </div>
-            </fieldset><br>
-        </form>
+                </fieldset>
+</fieldset><br>
+            </form>
 
 <!--##################################################### 
 #################### REQUIRE LOGIN ######################

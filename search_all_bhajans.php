@@ -112,71 +112,136 @@
 </head>
 <body>
 <div class="container">
-        <?php
-        include "db_connect.php";
+    <?php
+    include "db_connect.php";
 
-        if ($mysqli->connect_errno) {
-            echo "Failed to connect to MySQL: " . $mysqli->connect_error;
+    if ($mysqli->connect_errno) {
+        echo "Failed to connect to MySQL: " . $mysqli->connect_error;
+    }
+    ?>
+
+    <div id="bhajan-list">
+        <?php
+        $deity = isset($_GET['deity']) ? $_GET['deity'] : '';
+
+        $sql = "SELECT BhajanID, BhajanName, Shruthi, LastSungOn, Deity, Speed, Lyrics, Link FROM bhajans_table";
+
+        if ($deity !== '') {
+            $sql .= " WHERE Deity = ?";
         }
 
-        $sql = "SELECT BhajanID, BhajanName, Shruthi, LastSungOn FROM bhajans_table ORDER BY LastSungOn ASC";
-        $result = $mysqli->query($sql);
+        $sql .= " ORDER BY Deity ASC";
+        $stmt = $mysqli->prepare($sql);
+
+        if ($deity !== '') {
+            $stmt->bind_param("s", $deity);
+        }
+
+        $stmt->execute();
+        $result = $stmt->get_result();
 
         if ($result->num_rows > 0) {
             echo '<table>
                     <tr>
                         <th>Bhajan</th>
+                        <th>Deity</th>
                         <th>Shruthi</th>
-                        <th>Last Sung On</th>
+                        <th>Listen</th>
                     </tr>';
-            while ($row = $result->fetch_assoc()) {
-                echo '
-                    <tr id="bhajan-' . $row['BhajanID'] . '" class="bhajan-row">
-                        <td class="bhajan-name" data-id="' . $row['BhajanID'] . '">' . $row['BhajanName'] . '</td>
-                        <td>' . $row['Shruthi'] . '</td>
-                        <td><a href="bhajans_sung_on.php?sungdate=' . substr($row['LastSungOn'], -10) . '">' . substr($row['LastSungOn'], -10) . '</a></td>
-                    </tr>
-                    <tr id="lyrics-' . $row['BhajanID'] . '" class="lyrics-row">
-                        <td colspan="1" class="lyrics"></td>
-                    </tr>';
-            }
+                    while ($row = $result->fetch_assoc()) {
+                        echo '
+                            <tr id="bhajan-' . $row['BhajanID'] . '" class="bhajan-row">
+                                <td class="bhajan-name" data-id="' . $row['BhajanID'] . '">' . $row['BhajanName'] . '</td>';
+                                
+                        echo '<td>' . $row['Deity'] . '</td>';
+                        echo '<td>' . $row['Shruthi'] . '</td>';
+                        
+                        // Add YouTube link icon in place of the deity column if the link exists
+                        if (!empty($row['Link'])) {
+                            echo '<td style="text-align: center;">
+                                    <a href="' . $row['Link'] . '" target="_blank">
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/4/42/YouTube_icon_%282013-2017%29.png" alt="YouTube" width="30px">
+                                    </a>
+                                  </td>';
+                        } else {
+                            echo '<td></td>'; // Empty column if no YouTube link is available
+                        }
+                    
+                        
+                            '</tr>
+                            <tr id="lyrics-' . $row['BhajanID'] . '" class="lyrics-row">
+                                <td colspan="4" class="lyrics"></td>
+                            </tr>';
+
+
+                    }
+                    
+                    
             echo '</table>';
         } else {
-            echo "0 results" . "<br>";
+            echo "No results found.";
         }
 
         $mysqli->close();
         ?>
-        <br><br>
-
-        <a href="index.php" class="btn-primary">Return to main page</a>
     </div>
 
-    <script>
-        document.querySelectorAll('.bhajan-name').forEach(function(element) {
-            element.addEventListener('click', function() {
-                const bhajanID = this.getAttribute('data-id');
-                const lyricsRow = document.getElementById('lyrics-' + bhajanID);
-                
-                if (lyricsRow.style.display === 'table-row') {
-                    lyricsRow.style.display = 'none';
-                } else {
-                    fetchLyrics(bhajanID, lyricsRow);
-                }
-            });
-        });
+    <br><br>
 
-        function fetchLyrics(bhajanID, lyricsRow) {
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', 'fetch_lyrics.php?bhajanID=' + bhajanID, true);
-            xhr.onload = function() {
-                if (this.status === 200) {
-                    lyricsRow.querySelector('.lyrics').innerHTML = this.responseText;
-                    lyricsRow.style.display = 'table-row';
-                }
-            };
-            xhr.send();
-        }
-    </script>
+    <a href="index.php" class="btn-primary">Return to main page</a>
+</div>
+
+<script>
+
+    function fetchBhajans(deity) {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', 'your_php_page.php?deity=' + deity, true); // replace 'your_php_page.php' with your actual PHP file name
+        xhr.onload = function() {
+            if (this.status === 200) {
+                document.getElementById('bhajan-list').innerHTML = this.responseText;
+
+                // Reattach click event listeners for newly loaded bhajans
+                document.querySelectorAll('.bhajan-name').forEach(function(element) {
+                    element.addEventListener('click', function() {
+                        const bhajanID = this.getAttribute('data-id');
+                        const lyricsRow = document.getElementById('lyrics-' + bhajanID);
+
+                        if (lyricsRow.style.display === 'table-row') {
+                            lyricsRow.style.display = 'none';
+                        } else {
+                            fetchLyrics(bhajanID, lyricsRow);
+                        }
+                    });
+                });
+            }
+        };
+        xhr.send();
+    }
+
+    document.querySelectorAll('.bhajan-name').forEach(function(element) {
+        element.addEventListener('click', function() {
+            const bhajanID = this.getAttribute('data-id');
+            const lyricsRow = document.getElementById('lyrics-' + bhajanID);
+            
+            if (lyricsRow.style.display === 'table-row') {
+                lyricsRow.style.display = 'none';
+            } else {
+                fetchLyrics(bhajanID, lyricsRow);
+            }
+        });
+    });
+
+    function fetchLyrics(bhajanID, lyricsRow) {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', 'fetch_lyrics.php?bhajanID=' + bhajanID, true);
+        xhr.onload = function() {
+            if (this.status === 200) {
+                lyricsRow.querySelector('.lyrics').innerHTML = this.responseText;
+                lyricsRow.style.display = 'table-row';
+            }
+        };
+        xhr.send();
+    }
+</script>
 </body>
 </html>
