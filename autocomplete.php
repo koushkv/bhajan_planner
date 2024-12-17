@@ -1,6 +1,6 @@
 <?php
 include "db_connect.php";
-
+date_default_timezone_set('Asia/Kolkata');
 $term = $_GET['term'];
 $query = "SELECT BhajanName, Shruthi, LastSungOn FROM bhajans_table WHERE BhajanName LIKE ? ORDER BY LastSungOn ASC";
 $stmt = $mysqli->prepare($query);
@@ -28,7 +28,7 @@ while ($row = $result->fetch_assoc()) {
     if ($days == 0) {
         $formattedLastSungOn = "Today";
     } elseif ($days == 1) {
-        $formattedLastSungOn = "Yesterday";
+        $formattedLastSungOn = "1d";
     } elseif ($days > 360) {
         $formattedLastSungOn = "1+ y";
     } elseif ($days > 180) {

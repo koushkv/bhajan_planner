@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>Search Results</title>
     <style>
         body {
@@ -12,12 +12,18 @@
         .container {
             margin: 20px auto;
             background-color: #fff;
-            min-width: 400px;
+            min-width: 380px;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             text-align: center;
-            width: 50%;
+            width: 20%;
+            position: relative;
+        }
+        .help-block {
+            color: #737373;
+            font-size: 0.875em;
+            margin-top: 5px;
         }
         table {
             width: 100%;
@@ -32,14 +38,14 @@
             font-family: monospace;
         }
         th {
-            background-color: #4CAF50;
+            background-color: #888;
             color: white;
         }
         tr:nth-child(even) {
             background-color: #f9f9f9;
         }
         .btn-primary {
-            background-color: #4CAF50;
+            background-color: #888;
             border: none;
             color: white;
             padding: 10px 20px;
@@ -56,6 +62,21 @@
             background-color: #ffe4bb;
             border: 1px solid #ddd;
         }
+        
+        @media screen and (max-width: 400px) {
+    .container {
+        min-width: 323px;
+        padding: 10px;
+    }}
+        
+        @media (min-width: 401px) {
+    .container {
+        width: 80%;
+                max-width:420px;
+
+        padding: 10px;
+    }
+
     </style>
     
 </head>
@@ -64,8 +85,8 @@
         <?php
         include "db_connect.php";
         $keywordfromform = $_GET["keyword"];
-
-        echo "<h2> List of bhajans </h2>";
+        echo "<p class=help-block>Note: Tap on the bhajan name for lyrics</p>";
+        echo "<h2> Search Results </h2>";
 
         // Use real_escape_string to prevent SQL injection
         $keywordfromform = $mysqli->real_escape_string($keywordfromform);
@@ -90,10 +111,10 @@
                         <td class="bhajan-name" data-id="' . $row['BhajanID'] . '">' . $row['BhajanName'] . '</td>
                         <td>' . $row['Shruthi'] . '</td>
                         <td><a href="show_bhajans.php?sungdate=' . substr($row['LastSungOn'], -10) . '">' . substr($row['LastSungOn'], -10) . '</a></td>
+                    </tr>
+                    <tr id="lyrics-' . $row['BhajanID'] . '" class="lyrics-row">
+                        <td colspan="3" class="lyrics"></td>
                     </tr>';
-                    // <tr id="lyrics-' . $row['BhajanID'] . '" class="lyrics-row">
-                    //     <td colspan="1" class="lyrics"></td>
-                    // </tr>';
             }
             echo '</table>';
         } else {
@@ -104,7 +125,11 @@
         ?>
         <br><br>
 
-        <a href="index.php" class="btn-primary">Return to main page</a>
+        <form action="/index.php">
+        <div class="form-group">
+            <button id="submit" name="submit" class="btn-primary-mob">Home</button>
+        </div>
+        </form>
     </div>
 
     <script>

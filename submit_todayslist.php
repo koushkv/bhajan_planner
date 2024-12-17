@@ -32,21 +32,13 @@
             font-family: monospace;
         }
         th {
-            background-color: #4CAF50;
+            background-color: #888;
             color: white;
         }
         tr:nth-child(even) {
             background-color: #f9f9f9;
         }
-        .btn-primary {
-            background-color: #4CAF50;
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            cursor: pointer;
-            margin-top: 10px;
-            border-radius: 5px;
-        }
+        
     </style>
 </head>
 <body>
@@ -80,7 +72,7 @@
             }
 
             echo "<h2> Bhajans sung on $readableDate </h2>";
-            $sql = "SELECT BhajanName, Shruthi, Deity FROM bhajans_table WHERE LastSungOn LIKE '%" . $mysqli->real_escape_string($appendDate) . "%'";
+            $sql = "SELECT BhajanName, Shruthi FROM bhajans_table WHERE LastSungOn LIKE '%" . $mysqli->real_escape_string($appendDate) . "%'";
         $result = $mysqli->query($sql);
 
         if ($result->num_rows > 0) {
@@ -104,7 +96,11 @@
             $mysqli->close();
         }
         ?><br><br>
-<a href="index.php" class="btn-primary">Return to main page</a>
+<form action="/index.php">
+        <div class="form-group">
+            <button id="submit" name="submit" class="btn-primary-mob">Home</button>
+        </div>
+        </form>
     </div>
 </body>
 </html>

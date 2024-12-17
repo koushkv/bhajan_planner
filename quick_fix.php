@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -36,6 +37,11 @@
             background-color: #888;
             color: white;
         }
+        .help-block {
+            color: #737373;
+            font-size: 0.875em;
+            margin-top: 5px;
+        }
         tr:nth-child(even) {
             background-color: #f9f9f9;
         }
@@ -60,34 +66,44 @@
         .youtube-icon {
             width: 30px; /* Adjust size of the YouTube icon */
         }
-        @media (max-width: 450px) {
+        @media screen and (max-width: 400px) {
+    .container {
+        min-width: 323px;
+        padding: 10px;
+    }}
+        
+        @media (min-width: 401px) {
     .container {
         width: 80%;
+                max-width:420px;
+
         padding: 10px;
     }
-        }
     </style>
 </head>
 <body>
     <div class="container">
     <?php
     include "db_connect.php";
-    $keywordfromform1 = isset($_GET["speed"]) ? $_GET["speed"] : '';
-    $deity = isset($_GET["deity"]) ? $_GET["deity"] : '';
-    echo "<h2> Showing all $keywordfromform1 $deity bhajans  </h2>";
+    $selectedSpeeds = isset($_GET['speeds']) ? $_GET['speeds'] : [];
+    $deity = isset($_GET['deity']) ? $_GET['deity'] : '';
+    
+    echo "<p class=help-block>Note: Tap on the bhajan name for lyrics</p>";
+    echo "<h2> Search results </h2>";
 
     // Use real_escape_string to prevent SQL injection
-    $keywordfromform1 = $mysqli->real_escape_string(trim($keywordfromform1));
     $deity = $mysqli->real_escape_string(trim($deity));
 
     // Initialize the base SQL query
-    $sql = "SELECT BhajanID, BhajanName, Shruthi, LastSungOn, Lyrics, Link 
-        FROM bhajans_table 
-        WHERE 1=1";
+    $sql = "SELECT BhajanID, BhajanName, Shruthi, LastSungOn, Lyrics, Link FROM bhajans_table WHERE 1=1";
 
-    // Modify the query if a speed is selected
-    if (!empty($keywordfromform1)) {
-        $sql .= " AND BINARY Speed LIKE '%" . $keywordfromform1 . "%'";
+    // Add speed conditions if any speeds are selected
+    if (!empty($selectedSpeeds)) {
+        // Loop through selected speeds and create an AND condition for each
+        foreach ($selectedSpeeds as $speed) {
+            $speed = $mysqli->real_escape_string($speed);
+            $sql .= " AND BINARY Speed LIKE '%" . $speed . "%'";
+        }
     }
 
     // Modify the query if a deity is selected
@@ -131,8 +147,7 @@
     if (count($bhajans) > 0) {
         echo '<table>
         <tr>
-            <th>Bhajan</th>
-            <th>Shruthi</th>
+<th onclick="sortTable(0)">Bhajan &#9650;&#9660;</th>            <th>Shruthi</th>
             <th>Sung</th>
             <th>Listen</th> <!-- Add "Listen" column -->
         </tr>';
@@ -146,7 +161,7 @@
             // Check if a YouTube link exists
             if (!empty($bhajan['Link'])) {
                 echo '<td style="text-align: center;">
-                        <a href="' . htmlspecialchars($bhajan['Link']) . '" target="_blank">
+                        <a href="' . htmlspecialchars($bhajan['Link']) . '" target="_blank" onclick="updateClickCount(' . $bhajan['BhajanID'] . ')">
                             <img class="youtube-icon" src="https://upload.wikimedia.org/wikipedia/commons/4/42/YouTube_icon_%282013-2017%29.png" alt="YouTube">
                         </a>
                       </td>';
@@ -161,7 +176,7 @@
         }
         echo '</table>';
     } else {
-        echo "0 results". "<br>";
+        echo "There are no $keywordfromform1 $deity bhajans". "<br>";
     }
 
     $mysqli->close();
@@ -188,6 +203,23 @@
             }
         });
     });
+    function sortTable(columnIndex) {
+        const table = document.querySelector("table");
+        const rows = Array.from(table.querySelectorAll("tr:nth-child(n+2)")); // Skip header row
+        const isAscending = table.getAttribute("data-sort-order") !== "asc";
+        table.setAttribute("data-sort-order", isAscending ? "asc" : "desc");
+
+        rows.sort((rowA, rowB) => {
+            const cellA = rowA.querySelectorAll("td")[columnIndex]?.textContent.trim().toLowerCase();
+            const cellB = rowB.querySelectorAll("td")[columnIndex]?.textContent.trim().toLowerCase();
+
+            if (cellA < cellB) return isAscending ? -1 : 1;
+            if (cellA > cellB) return isAscending ? 1 : -1;
+            return 0;
+        });
+
+        rows.forEach(row => table.appendChild(row)); // Re-append rows in sorted order
+    }
 
     function fetchLyrics(bhajanID, lyricsRow) {
         const xhr = new XMLHttpRequest();
@@ -200,6 +232,18 @@
         };
         xhr.send();
     }
+    function updateClickCount(bhajanID) {
+    fetch('update_click_count.php?bhajanID=' + bhajanID)
+        .then(response => response.text())
+        .then(data => {
+            if (data === "success") {
+                console.log("Click count updated.");
+            } else {
+                console.error("Error updating click count.");
+            }
+        })
+        .catch(error => console.error("Fetch error: ", error));
+}
     </script>
 </body>
 </html>

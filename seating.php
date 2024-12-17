@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>Singer Seating Arrangement</title>
+
     <style>
         table {
             width: 100%;
@@ -21,30 +22,6 @@
             text-align: center;
             font-family: monospace;
             text-transform: capitalize;
-        }
-        .add-row-btn {
-            display: block;
-            margin: 10px auto;
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-family: monospace;
-            border-radius: 5px;
-        }
-        .add-row-btn:hover {
-            background-color: #45a049;
-        }
-        .btn-primary {
-            background-color: #4CAF50;
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            cursor: pointer;
-            margin-top: 10px;
-            border-radius: 5px;
-            text-decoration: none;
         }
         
     </style>
@@ -116,7 +93,11 @@
     </form>
     <button type="button" class="add-row-btn" onclick="copySingingOrder()">Copy to clipboard</button>
     <br><br>
-    <a href="admin.php" class="btn-primary">Return to main page</a>
+    <form action="index.php">
+        <div class="form-group">
+            <button type="submit" class="btn-primary-mob">Home</button>
+        </div>
+    </form>
 
 
 </div>
@@ -124,49 +105,42 @@
 <script>
    function copySingingOrder() {
     const singingOrderDiv = document.getElementById('singingOrder');
-    
-    // Extract all the text content inside singingOrderDiv, including the table and any other content
     let textToCopy = '';
 
-    // Get all the child nodes within the div
     singingOrderDiv.childNodes.forEach(node => {
         if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'TABLE') {
-            // If the node is a table, process it
             const rows = node.querySelectorAll('tr');
             rows.forEach(row => {
                 const cells = row.querySelectorAll('td');
                 let rowText = '';
                 let isEmptyRow = true;
-                
+
                 cells.forEach((cell, index) => {
                     const cellText = cell.innerText.trim();
                     if (cellText) {
-                        isEmptyRow = false; // Mark row as not empty if any cell has text
+                        isEmptyRow = false;
                     }
-                    rowText += (index > 0 ? '\t' : '') + cellText;
+                    rowText += (index > 0 ? '    ' : '') + cellText; // Use four spaces instead of \t
                 });
-                
+
                 if (!isEmptyRow) {
-                    textToCopy += rowText + '\n'; // Only add the row if it is not empty
+                    textToCopy += rowText + '\n';
                 }
             });
         } else {
-            // If the node is not a table (e.g., text nodes), just append its text content
             textToCopy += node.textContent.trim() + '\n';
         }
     });
 
-    // Create a hidden textarea to hold the formatted plain text
     const hiddenTextarea = document.createElement('textarea');
     hiddenTextarea.style.position = 'absolute';
     hiddenTextarea.style.left = '-9999px';
     hiddenTextarea.value = textToCopy;
     document.body.appendChild(hiddenTextarea);
     
-    // Select and copy the text from the textarea
     hiddenTextarea.select();
-    hiddenTextarea.setSelectionRange(0, 99999); // For mobile devices
-    
+    hiddenTextarea.setSelectionRange(0, 99999);
+
     try {
         document.execCommand('copy');
         alert('Singing order copied to clipboard!');
@@ -174,9 +148,9 @@
         alert('Failed to copy text');
     }
     
-    // Remove the textarea after copying
     document.body.removeChild(hiddenTextarea);
 }
+
 
 // Automatically convert input text to uppercase
 document.querySelectorAll('input[type="text"]').forEach(input => {
@@ -561,7 +535,7 @@ function generateOrder() {
 `;
 let additionalInfoHTML = `
 <br>
-    <h5>one 6bt please</h5>
+    <h5>One 6bt please</h5>
 `;
 
     // Append the seating arrangement table HTML below the singing order

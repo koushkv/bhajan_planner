@@ -4,6 +4,7 @@ if (!isset($_SESSION['loggedin'])) {
     header("Location: login.php");
     exit();
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -13,6 +14,7 @@ if (!isset($_SESSION['loggedin'])) {
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Allura&family=Satisfy&display=swap" rel="stylesheet">
     <title>Bhajan Planner</title>
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -20,92 +22,125 @@ if (!isset($_SESSION['loggedin'])) {
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     <!-- jQuery UI JavaScript -->
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.14/lottie.min.js"></script>
     <script>
-        function addNewBhajanField() {
-            var newInput = document.createElement("input");
-            newInput.type = "text";
-            newInput.name = "bhajan[]";
-            newInput.placeholder = "Enter Bhajan";
-            newInput.style.marginBottom = "10px";
-            newInput.style.width = "60%";
-            newInput.style.padding = "8px";
+    document.addEventListener("DOMContentLoaded", function() {
+        // Countdown function
+        function updateCountdown() {
+            const today = new Date();
+            const targetDate = new Date(today.getFullYear(), 10, 22); // November 22
 
-            $(newInput).autocomplete({
-                source: function(request, response) {
-                    $.ajax({
-                        url: "autocomplete.php",
-                        data: {
-                            term: request.term
-                        },
-                        success: function(data) {
-                            response(JSON.parse(data));
-                        }
-                    });
-                },
-                minLength: 2
-            });
+            // Adjust for if the date has already passed this year
+            if (today > targetDate) {
+                targetDate.setFullYear(today.getFullYear() + 1);
+            }
 
-            var formFields = document.getElementById("formFields");
-            formFields.appendChild(newInput);
+            const timeDiff = targetDate - today;
+            const daysToGo = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
 
-            var addButton = document.getElementById("addButton");
-            addButton.textContent = "Add Another Bhajan";
+            document.getElementById('countdown').textContent = daysToGo + " days to go!";
         }
 
-        $(function() {
-            $('#datepicker1').datepicker({
-                dateFormat: 'yy-mm-dd',
-                maxDate: 0
+        // Run the countdown on load
+        updateCountdown();
+
+        // Lottie animation with delay
+        setTimeout(function() {
+            var animation = lottie.loadAnimation({
+                container: document.getElementById('lottie-animation'),
+                renderer: 'svg',
+                loop: false,
+                autoplay: true,
+                path: 'birthday.json'
             });
+        }, 1500);
+    });
+    function addNewBhajanField() {
+    // Create a new input element for the Bhajan
+    const newInput = $('<input>')
+        .attr({
+            type: 'text',
+            name: 'bhajan[]',
+            placeholder: 'Enter Bhajan',
+        })
+        .addClass('autocomplete-bhajan')
+        .css({
+            marginBottom: '2px',
+            width: '65%',
+            padding: '8px',
         });
 
-        $(document).ready(function () {
-            $('#datepicker').datepicker({
-                dateFormat: 'yy-mm-dd',
-                maxDate: 0
-            });
-            
-            $('#keyword, #newbhajan, #delbhajan').autocomplete({
-                source: function(request, response) {
-                    $.ajax({
-                        url: "autocomplete.php",
-                        data: {
-                            term: request.term
-                        },
-                        success: function(data) {
-                            response(JSON.parse(data));
-                        }
-                    });
-                },
-                minLength: 2,
-                focus: function(event, ui) {
-                    // Prevent value from being inserted on focus
-                    return false;
-                },
-                select: function(event, ui) {
-                    // Set the value of the input to the selected item's label
-                    $(this).val(ui.item.label);
-                    return false;
-                },
-                open: function() {
-                    // Add custom styling if needed
-                    $(this).autocomplete('widget').addClass('custom-autocomplete');
+    // Create an element for autocomplete list
+    const autocompleteList = $('<div>').addClass('autocomplete-list');
+
+    // Attach autocomplete functionality
+    newInput.on('input', function () {
+        const term = $(this).val();
+        if (term.length > 0) {
+            $.ajax({
+                url: 'autocomplete.php',
+                dataType: 'json',
+                data: { term: term },
+                success: function (data) {
+                    autocompleteList.empty();
+                    if (data.length > 0) {
+                        // Create a table structure
+                        const table = $('<table>').addClass('autocomplete-table');
+                        const thead = $('<thead>').append(
+                            $('<tr>')
+                                .append($('<th>').text('Bhajan Name'))
+                                .append($('<th>').text('Shruthi'))
+                                .append($('<th>').text('Last Sung'))
+                        );
+                        table.append(thead);
+                        const tbody = $('<tbody>');
+
+                        // Populate the table with data
+                        data.forEach(item => {
+                            const row = $('<tr>').addClass('autocomplete-item');
+
+                            const nameCell = $('<td>').text(item.label).addClass('bhajan-name');
+                            const shruthiCell = $('<td>').text(item.shruthi).addClass('shruthi');
+                            const lastSungCell = $('<td>').text(item.lastsungon).addClass('last-sung');
+
+                            row.append(nameCell, shruthiCell, lastSungCell);
+
+                            // Click event to select the item
+                            row.on('click', function () {
+                                newInput.val(item.label);
+                                autocompleteList.empty();
+                            });
+
+                            tbody.append(row);
+                        });
+
+                        table.append(tbody);
+                        autocompleteList.append(table);
+                    }
                 }
-    }).data("ui-autocomplete")._renderMenu = function(ul, items) {
-        var that = this;
-        ul.append("<div class='autocomplete-item header'><strong class='bhajan-name'>Bhajan</strong><span class='shruthi'>Shruthi</span><span class='last-sung'>Sung</span></div>");
-        $.each(items, function(index, item) {
-            that._renderItemData(ul, item);
-        });
-    };
-    $.ui.autocomplete.prototype._renderItem = function(ul, item) {
-        return $("<li>")
-            .append("<div class='autocomplete-item'><strong class='bhajan-name'>" + item.label + "</strong><span class='shruthi'>" + item.shruthi + "</span><span class='last-sung'>" + item.lastsungon + "</span></div>")
-            .appendTo(ul);
-    };
-        });
+            });
+        } else {
+            autocompleteList.empty();
+        }
+    });
+
+    // Close the autocomplete list when clicking outside
+    $(document).on('click', function (e) {
+        if (!autocompleteList.is(e.target) && !newInput.is(e.target)) {
+            autocompleteList.empty();
+        }
+    });
+
+    // Append the input and autocomplete list to the form
+    $('#formFields').append(newInput, autocompleteList);
+
+    // Update the button text
+    $('#addButton').text('Add Another Bhajan');
+}
+
+
     </script>
-     <style>
+      <style>
         body {
             background-color: #f2f2f2;
             font-family: monospace;
@@ -123,7 +158,6 @@ if (!isset($_SESSION['loggedin'])) {
         }
         table {
             width: 100%;
-            margin-top: 20px;
             border-collapse: collapse;
             background-color: #ffffff;
         }
@@ -147,17 +181,6 @@ if (!isset($_SESSION['loggedin'])) {
             border-radius: 5px;
             font-size: 1.2em;
             text-decoration: underline; 
-        }
-        .btn-primary {
-            background-color: #4CAF50;
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            cursor: pointer;
-            margin-top: 10px;
-            border-radius: 5px;
-            font-family: monospace;
-            font-size: 1em;
         }
         .form-group {
             margin-bottom: 15px;
@@ -188,127 +211,191 @@ if (!isset($_SESSION['loggedin'])) {
             justify-content: space-between;
             border-bottom: 1px solid #ddd;
         }
-        .ui-autocomplete {
-        max-width: 100%;
+        .autocomplete-list {
+    position: absolute;
+    margin-bottom:2px;
+    border: none;
+    background-color: #fff;
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+    width: 85%;
+}
 
-        left: 41.25% !important; /* Ensure it's positioned in the center */
-        transform: translateX(0%); /* Center the dropdown */
-    }
+.autocomplete-table {
+    width: 100%;
+    border-collapse: collapse;
+}
 
-        .autocomplete-item.header {
-            background-color: lightgrey;
-            pointer-events: none;
-            width: 315px;
-            text-align: right;
-        }
+.autocomplete-table th {
+    background-color: #f0f0f0;
+    padding: 5px;
+    text-align: left;
+    font-weight: bold;
+    color: black;
+}
 
-        .autocomplete-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px;
-            border-bottom: 1px solid #ddd;
-            font-family: monospace;
-            font-size: 1em;
-            width: 315px; /* Set a fixed width */
-            margin: 10 auto; /* Center the autocomplete box */
-        }
+.autocomplete-table td {
+    padding: 5px;
+    cursor: pointer;
+}
 
-        .autocomplete-item strong.bhajan-name {
-            flex: 2;
-            text-align: left; /* Center the text */
-        }
+.autocomplete-table tr:hover {
+    background-color: #e0e0e0;
+}
 
-        .autocomplete-item span.shruthi,
-        .autocomplete-item span.last-sung {
-            text-align: right;
-            width: 50px; /* Set fixed width for other columns */
-        }
-        .ui-datepicker1 {
+.bhajan-name {
+    flex: 2;
+}
+
+.shruthi {
+    flex: 1;
+    color: #666;
+}
+
+.last-sung {
+    flex: 1;
+    color: #888;
+}
+
+        .ui-datepicker {
     left: 50% !important; 
     transform: translateX(-50%);
 }
 
-.ui-datepicker {
-    left: 50% !important; 
-    transform: translateX(-50%);
+.countdown {
+  font-family: 'Allura', cursive;
+  font-size: 1em;
+  margin-top:0;
+  margin-bottom:0;
+  color: #ff7800;
+  opacity: 0; /* Start with opacity 0 */
+  transition: opacity 2s ease-in-out; /* Smooth fade effect */
+  animation: fadeInOut 3s ease-in-out forwards; /* Run animation once */
 }
 
-        .form-check {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            margin-left: 110px;
-        }
-        .form-check-fast {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            margin-left: 110px;
+/* Fade-in and fade-out animation */
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1; /* Fully visible */
+  }
+}
 
-        }
-        .form-check-slow {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            margin-left: 110px;
+.form-check {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    margin-left:120px;
+    gap: 15px; /* Optional: Adjust spacing between radio and label */
+}
 
-        }
-        .form-check-med {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            margin-left: 110px;
-
-        }
-
-        .form-check input[type="radio"] {
-        margin-right: 110px;
-        width: 15px;
-
-        }
-        .form-check-fast input[type="radio"] {
-                margin-right: 110px;
-                width: 15px;
-        }
-        .form-check-slow input[type="radio"] {
-                margin-right: 110px;
-                width: 15px;
-        }
-        .form-check-med input[type="radio"] {
-                margin-right: 110px;
-                width: 15px;
-        }
-        .form-check div {
-            display: flex;
-            align-items: center;
-        }
-        .form-check label {
-            margin-left: 0;
-        }
-
+.form-check-inline {
+    margin-right: 10px; /* Space between each radio input group */
+}
         fieldset {
             padding: 20px;
             border: 1px solid #ccc;
             border-radius: 5px;
         }
         h1 {
-            font-family: 'Palatino Linotype', serif; /* Change this to your desired font */
+            font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif; 
             font-size: 2em; /* You can adjust the size */
+            margin-top:0px;
+        }
+        .elegant-line {
+            margin-top: 0px;
+            margin-bottom: 20px;
+            border: none;
+            height: 1.5px;
+        background: linear-gradient(to right, transparent, #ff8c00, #ffa500, #ff4500, #ff8c00, transparent);
+            position: relative;
+
+            /* Start with no scale and fade-in animation */
+            transform-origin: center; /* Set the starting point to the center */
+            transform: scaleX(0); /* Initially scale to 0 on the X-axis */
+            opacity: 0;
+            animation: centerExpand 2.5s ease forwards;
         }
 
-        @media (max-width: 450px) {
+/* Keyframes for center expansion and fade-in */
+@keyframes centerExpand {
+    0% {
+        transform: scaleX(0); /* Start as a dot in the center */
+        opacity: 0;
+    }
+    20% {
+        transform: scaleX(0); /* Initial fast expansion */
+        opacity: 1;
+    }
+    100% {
+        transform: scaleX(1);
+        opacity: 0.7; /* Fade slightly */
+    }
+}
+
+.text-container {
+    position: relative;
+    display: inline-block;
+    z-index: 1; /* Ensure the text appears above the animation */
+}
+
+#lottie-animation {
+    position: absolute;
+    width: 100%; /* Fill the container */
+    height: 100%;
+    transform: scale(1.2);
+    z-index: -1; /* Place the animation behind the text */
+    pointer-events: none; /* Prevent interaction */
+}
+.decorative-box {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #888;
+    border-radius: 15px;
+    width: 25%;
+    margin-bottom: 10px;
+    padding: 5px 10px;
+    box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.15);
+    background-color: #f4f4f4;
+}
+
+@media screen and (max-width: 400px) {
+    .container {
+        min-width: 323px;
+        padding: 10px;
+    }
+    .decorative-box {
+    width: 35%;
+}
+
+.form-check label {
+        margin-left: 0px;
+        align-items: left;
+    }
+    
+    .form-check {
+        margin-left: 100px;
+    }
+}
+
+
+
+        @media (min-width: 401px) {
     .container {
         width: 80%;
+        max-width:420px;
         padding: 10px;
     }
     .btn-primary {
         width: 50%;
         padding: 8px;
     }
+    .decorative-box {
+    width: 25%;
+}
     legend {
             background-color: #FFFFFF;
             color: black;
@@ -322,12 +409,6 @@ if (!isset($_SESSION['loggedin'])) {
         width: 100%;
         padding: 8px;
         box-sizing: border-box;
-    }
-    .ui-autocomplete {
-        max-width: 80%;
-
-        left: -5% !important; /* Ensure it's positioned in the center */
-        transform: translateX(20%); /* Center the dropdown */
     }
     .form-check {
         display: grid;
@@ -359,6 +440,11 @@ if (!isset($_SESSION['loggedin'])) {
         width:15px;
         margin-left: 80px;
     }
+    .form-check input[type="checkbox"] {
+        margin-right: 0;
+        width:15px;
+        margin-left: 80px;
+    }
     .form-check-fast input[type="radio"] {
         margin-left: 64px;
         width:80px;
@@ -375,7 +461,7 @@ if (!isset($_SESSION['loggedin'])) {
 
     }
     .form-check label {
-        margin-left: -80px;
+        margin-left: -50px;
         align-items: left;
     }
     .form-check-fast label {
@@ -389,15 +475,24 @@ if (!isset($_SESSION['loggedin'])) {
     }
 }
 
+
+
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Bhajan Planner</h1>
+        <p class="help-block">ॐ Aum Sri Sai Ram ॐ</p>
+        <p id="countdown" class="countdown">__ days to go!</p> <!-- Countdown will display here -->
+
+    <div class="text-container">
+    <div id="lottie-animation"></div>
+    <h1>Bhajan Planner</h1>
+</div>
         <?php include "db_connect.php"; ?>
         <br>
 
         
+        <div class="elegant-line"></div>
 
 
        
@@ -414,12 +509,12 @@ if (!isset($_SESSION['loggedin'])) {
             <legend>Submit Bhajan List</legend>
             <div id="formFields">
                 <div class="form-group">
-                    <input type="text" id="datepicker1" name="appendDate" required readonly style="width: 25%; padding: 8px;             font-family: monospace;
-">
+                    <input type="date" id="appendDate" name="appendDate" value="<?php echo date('Y-m-d'); ?>" max="<?php echo date('Y-m-d'); ?>" required style="width: auto; padding: 8px; font-family: monospace;">
+
 <p class="help-block">Select the date</p>
                 </div>
             </div>
-            <div class="form-group">
+            <div class="form-group"><br>
                 <button type="button" id="addButton" onclick="addNewBhajanField()" class="btn-primary-mob">Add Bhajan</button>
             </div>
             <div class="form-group">
@@ -427,103 +522,16 @@ if (!isset($_SESSION['loggedin'])) {
             </div>
         </fieldset><br>
     </form>
-
-        <!-- <form action="/add_bhajan.php">
-            <fieldset>
-                <legend>Add a Bhajan</legend>
-                <div class="form-group">
-                    <label for="newbhajan">Name of the bhajan:</label>
-                    <input id="newbhajan" name="newbhajan" type="text" placeholder="Enter the name of the bhajan" required style="width: 47%; padding: 8px; font-family: monospace;"><br>
-                </div>
-                <div class="form-group">
-                    <label for="newshruthi">Shruthi:</label>
-                    <select id="newshruthi" name="newshruthi" style="width: 47%; padding: 8px;">
-                        <option value=" ">Select</option>
-                        <option value="1P">1P</option>
-                        <option value="2P">2P</option>
-                        <option value="3P">3P</option>
-                        <option value="1M">1M</option>
-                        <option value="2M">2M</option>
-                        <option value="3M">3M</option>
-                        <option value="1.5P">1.5P</option>
-                        <option value="2.5P">2.5P</option>
-                        <option value="1.5M">1.5M</option>
-                        <option value="2.5M">2.5M</option>
-                        <option value="7P">7P</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="newdeity">Choose Deity:</label>
-                    <select id="newdeity" name="newdeity" style="width: 37%; padding: 8px; font-family: monospace;">
-                        <option value="Ganesha">Ganesha</option>
-                        <option value="Guru">Guru</option>
-                        <option value="Devi">Devi</option>
-                        <option value="Sai">Sai</option>
-                        <option value="Sarvadharma">Sarvadharma</option>
-                        <option value="Vittala">Vittala</option>
-                        <option value="Rama">Rama</option>
-                        <option value="Dattatreya">Dattatreya</option>
-                        <option value="Krishna">Krishna</option>
-                        <option value="Narayana">Narayana</option>
-                        <option value="Shiva">Shiva</option>
-                        <option value="Srinivasa">Srinivasa</option>
-                        <option value="Hanuman">Hanuman</option>
-                        <option value="Subramanya">Subramanya</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="speed">Speed:</label>
-                        <div id="speed" style="font-family: monospace;">
-                            <label>
-                                <input type="checkbox" name="speed" value="Slow"> Slow
-                            </label><br>
-                            <label>
-                                <input type="checkbox" name="speed" value="Medium"> Medium
-                            </label><br>
-                            <label>
-                                <input type="checkbox" name="speed" value="Mfast"> Medium Fast
-                            </label><br>
-                            <label>
-                                <input type="checkbox" name="speed" value="Fast"> Fast
-                            </label><br>
-                            <label>
-                                <input type="checkbox" name="speed" value="Third Speed"> Third Speed
-                            </label><br>
-                        </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="lyrics">Lyrics:</label>
-                    <textarea id="lyrics" name="lyrics" rows="10" cols="50" style="width: 80%; padding: 8px; font-family: monospace;" placeholder="Enter lyrics here..."></textarea>
-                </div>
-                <div class="form-group">
-                    <button id="submit" name="submit" class="btn-primary">Add a new bhajan</button>
-                </div>
-            </fieldset><br>
-        </form> -->
-
-
         
 
-        <form>
-        <fieldset>
-        <legend>Search by Name</legend>
-                <div class="form-group">
-                    <input id="keyword" name="keyword" type="search" placeholder="Enter the bhajan name" style="width: 55%; padding: 8px;             font-family: monospace;
-">
-                    <p class="help-block">Check if the bhajans are updated correctly</p>
-                </div>
-                </fieldset>
-</fieldset><br>
-            </form>
-
+            
 <!--##################################################### 
 #################### REQUIRE LOGIN ######################
 ##################################################### -->
 
         
 
-        <form action="/index.php">
+        <form action="/logout.php">
             <fieldset>
                 <div class="form-group" action="/logout.php">
                     <button id="submit" name="submit" class="btn-primary-mob">Logout</button>

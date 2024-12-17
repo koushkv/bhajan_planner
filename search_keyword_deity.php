@@ -130,7 +130,7 @@
         if (count($bhajans) > 0) {
             echo '<table>
                     <tr>
-                        <th>Bhajan</th>
+<th onclick="sortTable(0)">Bhajan Name</th>
                         <th>Shruthi</th>
                         <th>Sung</th>
                         <th>Listen</th> <!-- Add "Listen" column -->

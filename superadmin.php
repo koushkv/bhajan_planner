@@ -364,13 +364,9 @@ background: linear-gradient(to right, transparent, #ff8c00, #ffa500, #ff4500, #f
     z-index: -1; /* Place the animation behind the text */
     pointer-events: none; /* Prevent interaction */
 }
-@media screen and (max-width: 400px) {
-    .container {
-        min-width: 323px;
-        padding: 10px;
-    }}
-        
-        @media (min-width: 401px) {
+
+
+        @media (max-width: 450px) {
     .container {
         width: 80%;
         padding: 10px;
@@ -650,6 +646,13 @@ $mysqli->close();
             <fieldset>
             <legend>Register New User</legend>
                     <button id="submit" name="submit" class="btn-primary-mob">Generate Registration Link</button>
+            </fieldset><br>
+        </form>
+
+        <form action="/top_bhajans.php">
+            <fieldset>
+            <legend>Visitor Stats</legend>
+                    <button id="submit" name="submit" class="btn-primary-mob">Check Stats</button>
             </fieldset><br>
         </form>
 

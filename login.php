@@ -27,12 +27,14 @@ if (isset($_POST['submit'])) {
         $_SESSION['role'] = $user['role'];
 
         // Check user role and redirect accordingly
-        if ($user['role'] == 'admin') {
+        if ($user['role'] == 'superadmin') {
+            header("Location: superadmin.php");
+        } elseif ($user['role'] == 'admin') {
             header("Location: admin.php");
         } elseif ($user['role'] == 'user') {
-            header("Location: submit_list.php"); // Redirect 'user' role
+            header("Location: submit_list.php");
         } elseif ($user['role'] == 'normal') {
-            header("Location: users.php"); // Redirect 'normal' role to user.php
+            header("Location: users.php");
         }
         exit();
     } else {
